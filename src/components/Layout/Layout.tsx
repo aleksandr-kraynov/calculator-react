@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Block from '../Block/Block';
 import Button from '../Button/Button';
 import Display from '../Display/Display';
@@ -9,31 +9,47 @@ function Layout() {
   const [value, setValue] = useState('');
   const [result, setResult] = useState('');
 
-  console.log(value, result);
+  const ref = useRef('')
+
+  console.log(value, result)
 
   function summa() {
     setResult(`${value}+${result}`);
-    setValue('');
+    ref.current = '+'
   }
 
   function difference() {
     setResult(`${value}-${result}`);
-    setValue('');
+    ref.current = '-'
   }
 
   function multiplication() {
     setResult(`${value}*${result}`);
-    setValue('');
+    ref.current = '*'
   }
 
   function division() {
     setResult(`${value}/${result}`);
-    setValue('');
+    ref.current = '/'
   }
 
   function resultCalc() {
     setValue(eval(result + value));
-    setResult('');
+    setResult('')
+  }
+
+  const operands = [
+    {key: '/', callback: division},
+    {key: 'x', callback: multiplication},
+    {key: '-', callback: difference},
+    {key: '+', callback: summa},
+  ]
+
+  const onChange = (item) => {
+    if(ref.current) {
+      setValue('')
+    }
+    setValue(prev=> prev + item)
   }
 
   return (
@@ -50,19 +66,16 @@ function Layout() {
         </div>
         <div
           className='max-w-[240px] h-[56px] flex gap-[8px] p-[4px] rounded-[4px] drop-shadow-[0_4px_4px_0_rgba(0,0,0,0.25)]'
-          draggable='true'>
-          <button className='w-full h-full border-solid border-2 rounded-[6px]' onClick={() => division()}>
-            /
-          </button>
-          <button className='w-full h-full border-solid border-2 rounded-[6px]' onClick={() => multiplication()}>
-            x
-          </button>
-          <button className='w-full h-full border-solid border-2 rounded-[6px]' onClick={() => difference()}>
-            -
-          </button>
-          <button className='w-full h-full border-solid border-2 rounded-[6px]' onClick={() => summa()}>
-            +
-          </button>
+          draggable='true'
+        >
+          {operands.map(operand => {
+            return (
+              <button className='w-full h-full border-solid border-2 rounded-[6px]' key={operand.key} onClick={operand.callback}>
+                {operand.key}
+              </button>
+            )
+            })
+          }
         </div>
         <div
           className='max-w-[240px] h-[224px] grid grid-cols-3 gap-[8px] p-[4px] rounded-[4px] drop-shadow-[0_4px_4px_0_rgba(0,0,0,0.25)]'
@@ -72,7 +85,7 @@ function Layout() {
             return (
               <button
                 className={`w-full h-full border-solid border-2 rounded-[6px] ${item === 0 ? 'col-span-2' : ''}`}
-                onClick={() => setValue(value + item)}
+                onClick={() => onChange(item)}
                 key={item}>
                 {item}
               </button>
